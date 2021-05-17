@@ -1,0 +1,1108 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="http://js.jstucdn.com/style/layout.css" rel="stylesheet" type="text/css" />
+<link href="http://js.jstucdn.com/style/user.css" rel="stylesheet" type="text/css" />
+<script src="http://js.jstucdn.com/js/jquery-1.7.1.min.js" charset="utf-8"></script>
+<script src="http://js.jstucdn.com/js/global.js?v=20160922" charset="utf-8"></script>
+<title>我的首页</title>
+<meta name="keywords" content="我的首页">
+<meta name="description" content="我的首页">
+</head>
+<body>
+<script>
+var uri = document.location.href.toLowerCase();
+var na = ['/release','/user/reg','/work','/translate'];
+var na_ga = [];
+
+function is_a(){
+for(var i in na)
+    if(uri.indexOf(na[i])>=0) return false;
+return true;
+}
+
+function is_ga_a(){
+var t = na.concat(na_ga);
+for(var i in t)
+    if(uri.indexOf(t[i])>=0) return false;
+return true;
+}
+</script>
+
+<script type="text/javascript">
+    //if(is_a()) document.write('<script src="https://res.iyoowi.com/iy/iy.js?cid=6BC02495&skey=1c5b2238"><\/script>');
+    if (is_a()) {
+        var ad = GLOBAL.GetAd(4);
+        if (ad) {
+            document.write(ad.item_js.code);
+        }
+    }
+</script>
+
+<script type="text/javascript" src="http://js.jstucdn.com/js/jquery.cookie.js"></script>
+
+<div class="top-box">
+    <div class="header">
+  <div class="w">
+      <h1 class="fl"><a href="/" class="w_index"><img id="logo"></a></h1>
+      <form name="search" action="/search/index" method="get" class="fl corner search-box">
+          <input type="text"  size="20" class="keywords" name="keyword" autocomplete='off' placeholder="請輸入搜尋關鍵詞" />
+          <input type="submit" class="submit">
+          <div class="search-list" style="display:none;"></div>
+          <ul id="top_search_list" style="display:none;"></ul>
+          <input type="hidden" name="search_type" id="search_type" value="">
+      </form>
+      <a href="http://www.yyets.com/jz/" target="_blank" class="zzhu">捐助我们</a>
+      <span class="app_link" style="position: relative; font-size: 16px; font-weight: bold; left: 20px; top: 15px;"><a href="http://app.rrys.tv" target="_blank" style="color:#fff">客户端下载</a><span style="position: absolute;;left:0px;top:35px;display: none;"><img src="http://app.rrysapp.com/uploads/20181115/9ba002992f234b7c7c4203db5abe7222.png" style="width:180px;height: 180px;"></span></span>
+       <div class="fr top-login">
+        <!-- 未登录 -->
+        <div class="top-login-before" style="display:none;"><div class="u"><em class="ico user-ico"></em><a href="/user/login">登入</a>/ <a href="/user/reg">註冊</a>&nbsp;&nbsp;<a href="/user/login/change_pwd">修改登录密码</a></div></div>
+        <!-- 未登录 -->
+        <!-- 已登录 -->
+        <div class="top-login-after" style="display:none;">
+          <div class="fl u">
+          </div>
+          <div class="fl e top_msg">
+<!--            <em class="corner" style="display:none;"></em>-->
+            <div class="user-pop p-email">
+                <div class="user-pop-con corner">
+                    <span class="ar"></span>
+                      <ul>
+                        <li class="message"><a href='/user/message'><span>私信</span></a><strong class="corner"></strong></li>
+                        <li class="sys_message" style="margin-bottom: 10px;"><a href="/user/sysmessage"><span>系统通知</span></a><strong class="corner"></strong></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+          <div class="fr fb">
+            我要发布<em></em>
+            <div class="user-pop p-release">
+                <div class="user-pop-con corner">
+                    <span class="ar"></span>
+                      <ul id="post_List">
+                      </ul>
+                  </div>
+              </div>
+          </div>
+        </div>
+        <!-- 已登录 -->
+       </div>
+  </div>
+</div>
+
+<div class="notice">
+  <div class="w">
+    <p><strong class="f0">网站公告：</strong> <a target="_blank"><span></span></a></p>
+    <a class="close">x</a>
+  </div>
+</div>
+
+<style>
+.signin-tips{ border-radius:5px; border:1px solid #a6884c; background:#fab639; color:#fff; width:436px; height:95px; box-shadow:3px 3px 0 rgba(0,0,0,.3);z-index: 999;}
+.signin-tips .fl{ font-size:60px; font-weight:bold; width:40%; text-align:center; margin-top:36px; text-shadow:1px 1px 0 #333;}
+.signin-tips .fr{ width:60%; font-size:17px; line-height:150%; margin-top:17px; text-shadow:1px 1px 0 #666;}
+.signin-tips .fr b{ font-size:25px;}
+</style>
+<script>
+$('#logo').attr('src',GLOBAL.CONST.RES_URL+'images/logo.png');
+GLOBAL.JQUERY.SEARCHTIPS(250,function(){$('.search-list').hide()});
+var navbar_a,navbar_b;
+
+$(document).ready(function(){
+    //加载用户信息
+    $('.top-login-before').show();
+    var ginfo  = $.cookie('GINFO')
+    if (ginfo) {
+        $.ajax({
+            url: '/user/login/getCurUserTopInfo',
+            async: false,
+            dataType: "json",
+            success: function(R){
+                $('.top-login-before').hide();
+                GLOBAL.InitTopUserInfo(R.data,R.status);
+            }
+        });
+    }
+    var common_data = GLOBAL.CommonData();
+    load_hotkeywords(common_data.hotkeywords)
+    load_announcements(common_data.announcements)
+
+  $('.top-login-after .fb').mouseover(function(){
+    $(this).addClass('fb-selected');
+  }).mouseout(function(){
+    $(this).removeClass('fb-selected');
+  })
+  $('#logout').click(function(){
+    GLOBAL.Loading();
+    $.getJSON('/user/logout/ajaxLogout',function(data){
+      if(data.status==1){
+        window.history.go(0);
+      }
+      GLOBAL.Loading('hide');
+    });
+    return false;
+  });
+  $('.app_link a').hover(function(){
+    $(this).next().show();
+  },function(){
+    $(this).next().hide();
+  });
+});
+
+function load_hotkeywords(hotkeywords)
+{
+    var html = '<li><a href="http://www.yyets.com/jz" target="_blank" rel="nofollow"><span style="color:#ED8600">1</span>捐助人人影视</a></li>\
+';
+    for(key in hotkeywords){
+        key = parseInt(key);
+        if (typeof hotkeywords[key].keyword !== 'undefined') html += '<li><a href="/search?keyword='+encodeURIComponent(hotkeywords[key].keyword)+'"><span class="corner50">'+(key+1)+'</span>'+hotkeywords[key].keyword+'</a></li>';
+    }
+    $('.search-list').html('<ul class="corner box key-result">'+html+'</ul>');
+}
+
+function load_announcements(announcements) {
+    if(announcements && announcements.updatetime > GLOBAL.Util.getCookie('last_announ')){
+        $('.notice').show().find('.w span').text(announcements.title).parent().attr('href','/announcement/'+announcements.id).parent().next().click(function(){
+            $('.notice').hide();
+            GLOBAL.Util.setCookie('last_announ',announcements.updatetime,1000*60*60*24*365);
+        });
+    }
+}
+</script>
+
+    <div id="globalNav1" style="text-align:center; margin:20px 0;">
+    <a href="" target="_blank" rel="nofollow"><img src=""/></a>
+</div>
+
+<script>
+    $(function () {
+        var ad = GLOBAL.GetAd(5);
+        if (ad) {
+            $('#globalNav1').find('a').attr('href',ad.item_img.url);
+            $('#globalNav1').find('img').attr('src',ad.item_img.pic);
+        }
+    })
+</script>
+
+    <div class="menu-box">
+  <ul class="w">
+    <li><a href="/" class="w_index">首页</a></li>
+    <li channel="translate"><a href="/translate">翻译任务</a></li>
+    <li channel="article"><a href="/article">资讯</a></li>
+    <li channel="subtitle"><a href="/subtitle">字幕</a></li>
+    <li channel="resource"><a href="/resourcelist">影视库</a></li>
+    <li channel='top'><a href="/html/top/week.html">排行榜</a></li>
+    <li channel="today"><a href="/today">今日</a></li>
+    <li channel='schedule'><a href="/tv/schedule">播出表</a></li>
+    <li><a href="/Announcement">公告</a></li>
+    <li><a href="http://allyingshi.com/fanyi/index.html">合作洽谈</a></li>
+  </ul>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+  if(navbar_a) $('.menu-box li:first').after(navbar_a);
+  if(navbar_b) $('.menu-box li:last').after(navbar_b);
+  var matches = window.location.href.match(/http:\/\/[^/]+(\/.*)/);
+  var group_name = matches==null?'':matches[1].replace(/\/{2,}/m,'/');
+  var groups = {'article':'^/article','fav':'^/user/fav','subtitle':'^/[a-z]?subtitle','resource':'^/[a-z]?resourcelist|/[a-z]?resource/','schedule':'^/tv/schedule|/html/return|/html/new','today':'^/today','help':'^/help','top':'^/html/top/','translate':'^/translate'};
+  for(key in groups)
+  {
+    regx = new RegExp(groups[key],'i');
+    if(group_name.search(regx)!=-1)
+    {
+      $('.menu-box li[channel='+key+'] a').addClass('cur');
+      return true;
+    }
+  }
+  $('.menu-box li:first a').addClass('cur');
+});
+</script>
+<div id="globalNav2" style="text-align:center; margin:15px 0;">
+    <!-- <a href="https://go.nordpass.io/aff_c?offer_id=539&aff_id=41640&url_id=11001" target="_blank" rel="nofollow"><img src="http://tu.jstucdn.com/g3/ad-img/960-16.jpg" width="1100" height="90"/></a> -->
+<script type="text/javascript">
+  if(is_ga_a()) document.write('<script src="http://g.ousns.net/ga-728-t.js?232" type="text/javascript"><\/script>');
+</script>
+</div>
+
+<script>
+/*
+    $(function () {
+        var ad = GLOBAL.GetAd(6);
+        if (ad) {
+            $('#globalNav2').find('a').attr('href',ad.item_img.url);
+            $('#globalNav2').find('img').attr('src',ad.item_img.pic);
+        }
+    })
+*/
+</script>
+
+
+</div>
+<div class="middle-box">
+    <div class="w">
+      <div class="clearfix usercenter-box">
+          <div class="fl user-menu">
+  <ul>
+  <li><a href="/user" channel="myedit">个人设置</a></li>
+    <li><a href="/user/upgrade" channel="upgrade">升级中心</a></li>
+    <li><a href="/user/redeem" channel="redeem">兑换管理</a></li>
+    <li><a href="/user/fav" channel="fav">我的收藏</a></li>
+    <li><a href="/user/message" channel="message">我的私信</a></li>
+    <li><a href="/user/resource" channel="resource">我的资源</a></li>
+    <li><a href="/user/article" channel="article">我的文章</a></li>
+    <li><a href="/user/subtitle" channel="subtitle">我的字幕</a></li>
+    <li><a href="/user/help" channel="help">我的求档</a></li>
+    <li><a href="/user/blacklist" channel="blacklist">我的黑名单</a></li>
+   </ul>
+</div>
+<script>var channel='myedit';$('.user-menu a[channel='+channel+']').addClass('cur')</script> 
+          <div class="fr box user-main">
+                <div class="u_intro">
+                    <div class="u_ico_pic fl">
+                        <span><img src="http://tu.jstucdn.com/ftp/avatar/f_noavatar_m.gif" /></span><br />
+                        <a href="http://www.rrys2019.com/user/setting/avatar" class="f14">更换头像</a>
+                    </div>
+                    <div class="u_s_intro fr">
+                        <dl>
+                            <dt><h2 class="f_u0">AB_IN</h2></dt>
+                            <dd>
+				<form method="post" id="form_basic">
+                            	    <div><span>签名</span><input name="signature" value="" type="text" class="userInput" placeholder="请输入45个字以内的个性签名" size="100" maxlength="45" /><input type="submit" class="btn1" value="提交修改" /></div>
+                                    <!--<div><input type="submit" class="btn1" value="提交修改" /></div>-->
+                            	<input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                                <div class="u_acount_a1">
+                                    <span class="sp1">UserID： <font class="f_u0">9660707</font></span>
+                                    <span class="sp2">用户组：
+                                        <font class="f_u0">新会员</font>
+                                                                            </span>
+                                    <span class="sp3">人人钻：    <font class="f_u0">1</font></span>
+                                </div>
+                                <div class="u_acount_a1">
+                                    <span class="sp1">用户名： <font class="f_u0">AB_IN</font></span>
+                                    <span class="sp2">手机号：
+                                                                            </span>
+                                    <span class="sp3">邮箱：   <font class="f_u0">liusy200708@163.com</font></span>
+                                </div>
+                                                            </dd>
+                            <div class="clearfix"></div>
+                            
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+                <div class="u_p_set">
+                    <dl class="ziliao_dl">
+                        <dt><h2>修改密码</h2></dt>
+                        <dd>
+                        <form method="post" id="form_passwd">
+                            <ul class="ziliao_ul">
+                                <li><span class="two-ways"></span><input type="radio" name="change_pwd_method" checked id="change_pwd_1">&nbsp;<label for="change_pwd_1">通过旧密码</label>&nbsp;&nbsp;<input type="radio" name="change_pwd_method" id="change_pwd_2">&nbsp;<label for="change_pwd_2">通过手机验证码</label></li>
+                                <li class="oldpasswd"><span>原始密码</span><input type="password" class="userInput" name="oldpasswd" id="oldpasswd" value="" size="47" /></li>
+                                <li class="change_pwd_phone" style="display: none;"><span>手机号码</span><select name="phone_area"><option value="86">86-中国</option><option value="1">1-美国</option><option value="1">1-加拿大</option><option value="7">7-俄罗斯</option><option value="7">7-哈萨克斯坦</option><option value="20">20-埃及</option><option value="27">27-南非</option><option value="30">30-希腊</option><option value="31">31-荷兰</option><option value="32">32-比利时</option><option value="33">33-法国</option><option value="34">34-西班牙</option><option value="36">36-匈牙利</option><option value="39">39-意大利</option><option value="40">40-罗马尼亚</option><option value="41">41-瑞士</option><option value="43">43-奥地利</option><option value="44">44-英国</option><option value="45">45-丹麦</option><option value="46">46-瑞典</option><option value="47">47-挪威</option><option value="48">48-波兰</option><option value="49">49-德国</option><option value="51">51-秘鲁</option><option value="52">52-墨西哥</option><option value="53">53-古巴</option><option value="54">54-阿根廷</option><option value="55">55-巴西</option><option value="56">56-智利</option><option value="57">57-哥伦比亚</option><option value="58">58-委内瑞拉</option><option value="60">60-马来西亚</option><option value="61">61-澳大利亚</option><option value="62">62-印度尼西亚</option><option value="63">63-菲律宾</option><option value="64">64-新西兰</option><option value="65">65-新加坡</option><option value="66">66-泰国</option><option value="81">81-日本</option><option value="82">82-韩国</option><option value="84">84-越南</option><option value="90">90-土耳其</option><option value="91">91-印度</option><option value="92">92-巴基斯坦</option><option value="93">93-阿富汗</option><option value="94">94-斯里兰卡</option><option value="95">95-缅甸</option><option value="98">98-伊朗</option><option value="211">211-南苏丹</option><option value="212">212-摩洛哥</option><option value="213">213-阿尔及利亚</option><option value="216">216-突尼斯</option><option value="218">218-利比亚</option><option value="220">220-冈比亚</option><option value="221">221-塞内加尔</option><option value="222">222-毛里塔尼亚</option><option value="223">223-马里</option><option value="224">224-几内亚</option><option value="225">225-象牙海岸</option><option value="226">226-布基纳法索</option><option value="227">227-尼日尔</option><option value="228">228-多哥</option><option value="229">229-贝宁</option><option value="230">230-毛里求斯</option><option value="231">231-利比里亚</option><option value="232">232-塞拉利昂</option><option value="233">233-加纳</option><option value="234">234-尼日利亚</option><option value="235">235-乍得</option><option value="236">236-中非共和国</option><option value="237">237-喀麦隆</option><option value="238">238-开普</option><option value="239">239-圣多美</option><option value="240">240-赤道几内亚</option><option value="241">241-加蓬</option><option value="242">242-刚果共和国</option><option value="243">243-刚果民主共和国</option><option value="244">244-安哥拉</option><option value="245">245-几内亚比绍共和国</option><option value="247">247-阿森松岛</option><option value="248">248-塞舌尔</option><option value="249">249-苏丹</option><option value="250">250-卢旺达</option><option value="251">251-埃塞俄比亚</option><option value="252">252-索马里</option><option value="253">253-吉布提</option><option value="254">254-肯尼亚</option><option value="255">255-坦桑尼亚</option><option value="256">256-乌干达</option><option value="257">257-布隆迪</option><option value="258">258-莫桑比克</option><option value="260">260-赞比亚</option><option value="261">261-马达加斯加</option><option value="262">262-留尼汪</option><option value="263">263-津巴布韦</option><option value="264">264-纳米比亚</option><option value="265">265-马拉维</option><option value="266">266-莱索托</option><option value="267">267-博茨瓦纳</option><option value="268">268-斯威士兰</option><option value="269">269-科摩罗</option><option value="269">269-马约特</option><option value="297">297-阿鲁巴</option><option value="298">298-法罗群岛</option><option value="299">299-格陵兰岛</option><option value="350">350-直布罗陀</option><option value="351">351-葡萄牙</option><option value="352">352-卢森堡</option><option value="353">353-爱尔兰</option><option value="354">354-冰岛</option><option value="355">355-阿尔巴尼亚</option><option value="356">356-马耳他</option><option value="357">357-塞浦路斯</option><option value="358">358-芬兰</option><option value="359">359-保加利亚</option><option value="370">370-立陶宛</option><option value="371">371-拉脱维亚</option><option value="372">372-爱沙尼亚</option><option value="373">373-摩尔多瓦</option><option value="374">374-亚美尼亚</option><option value="375">375-白俄罗斯</option><option value="376">376-安道尔</option><option value="377">377-摩纳哥</option><option value="378">378-圣马力诺</option><option value="380">380-乌克兰</option><option value="381">381-塞尔维亚</option><option value="382">382-黑山</option><option value="385">385-克罗地亚</option><option value="386">386-斯洛文尼亚</option><option value="387">387-波斯</option><option value="389">389-马其顿</option><option value="420">420-捷克</option><option value="421">421-斯洛伐克</option><option value="423">423-列支敦士登</option><option value="501">501-伯利兹</option><option value="502">502-瓜地马拉</option><option value="503">503-萨尔瓦多</option><option value="504">504-洪都拉斯</option><option value="505">505-尼加拉瓜</option><option value="506">506-哥斯达黎加</option><option value="507">507-巴拿马</option><option value="508">508-圣彼埃尔和密克隆岛</option><option value="509">509-海地</option><option value="590">590-瓜德罗普岛</option><option value="591">591-玻利维亚</option><option value="592">592-圭亚那</option><option value="593">593-厄瓜多尔</option><option value="594">594-法属圭亚那</option><option value="595">595-巴拉圭</option><option value="596">596-马提尼克</option><option value="597">597-苏里南</option><option value="598">598-乌拉圭</option><option value="599">599-库拉索</option><option value="670">670-东帝汶</option><option value="673">673-文莱</option><option value="675">675-巴布亚新几</option><option value="676">676-汤加</option><option value="677">677-所罗门群岛</option><option value="678">678-瓦努阿图</option><option value="679">679-斐济</option><option value="680">680-帕劳</option><option value="682">682-库克群岛</option><option value="685">685-萨摩亚</option><option value="686">686-基里巴斯</option><option value="687">687-新喀里多尼亚</option><option value="689">689-法属波利尼</option><option value="852">852-中国香港</option><option value="853">853-澳门</option><option value="855">855-柬埔寨</option><option value="856">856-老挝</option><option value="880">880-孟加拉国</option><option value="886">886-中国台湾</option><option value="960">960-马尔代夫</option><option value="961">961-黎巴嫩</option><option value="962">962-约旦</option><option value="963">963-叙利亚</option><option value="964">964-伊拉克</option><option value="965">965-科威特</option><option value="966">966-沙特阿拉伯</option><option value="967">967-也门</option><option value="968">968-阿曼</option><option value="970">970-巴勒斯</option><option value="971">971-阿拉伯</option><option value="972">972-以色列</option><option value="973">973-巴林</option><option value="974">974-卡塔尔</option><option value="975">975-不丹</option><option value="976">976-蒙古</option><option value="977">977-尼泊尔</option><option value="992">992-塔吉克斯坦</option><option value="993">993-土库曼斯坦</option><option value="994">994-阿塞拜疆</option><option value="995">995-格鲁吉亚</option><option value="996">996-吉尔吉斯斯坦</option><option value="998">998-乌兹别克斯坦</option><option value="1242">1242-巴哈马</option><option value="1246">1246-巴巴多斯</option><option value="1264">1264-安圭拉</option><option value="1268">1268-安提瓜</option><option value="1345">1345-开曼群岛</option><option value="1441">1441-百慕大群岛</option><option value="1473">1473-格林纳达</option><option value="1649">1649-特克斯和凯科斯群岛</option><option value="1664">1664-蒙特塞拉特岛</option><option value="1671">1671-关岛</option><option value="1684">1684-美属萨摩亚</option><option value="1721">1721-圣马丁岛（荷兰部分）</option><option value="1758">1758-圣露西亚</option><option value="1767">1767-多米尼加</option><option value="1784">1784-圣文森特和格林纳丁斯</option><option value="1787">1787-波多黎各</option><option value="1809">1809-多明尼加共和国</option><option value="1868">1868-特立尼</option><option value="1869">1869-圣基</option><option value="1876">1876-牙买加</option></select>&nbsp;<input type="text" name="phone_number" class="userInput"></li>
+                                <li class="change_pwd_phone" style="display: none;"><span>验证码</span><input type="text" name="sms_verify" class="userInput" maxlength="6" style="width:60px;">&nbsp;<input type="button" value="获取短信验证码" class="btn1" name="change_pwd_get_sms"></li>
+                                <li><span>新密码</span><input type="password" class="userInput" name="newpasswd" id="newpasswd" value="" size="47" /><font class="pwd-requirements">(密码8-20位必须包含大小写英文字母和数字)</font></li>
+                                <li><span>再次输入密码</span><input type="password" class="userInput" name="renewpasswd" id="renewpasswd" value="" size="47" /><font class="pwd-requirements">(密码8-20位必须包含大小写英文字母和数字)</font></li>
+                                <li><span></span><input type="submit" class="btn1 form_passwd_submit" value="提交修改" /></li>
+                            </ul>
+                        <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                        </dd>
+                    </dl>
+                </div>
+
+                <div class="clearfix"></div>
+                <div class="u_p_set">
+                    <dl class="ziliao_dl">
+                        <dt><h2 class="edit-username">修改用户名</h2></dt>
+                        <dd class="edit-username-notice">
+                          如需修改用户名，请点击 <a id="changeNickname">编辑</a> 后进行修改，每次修改用户名将扣除100人人钻
+                        </dd>
+                        <dd id="nicknameBox" style="display: none;">
+                        <form method="post" id="form_nickname">
+                            <ul class="ziliao_ul">
+                                <input type="hidden" name="uid" id="uid" value="9660707" />
+				<li><span>当前用户名</span><font>AB_IN</font></li>
+                                <li><span>新用户名</span><input type="text" class="userInput" name="nickname" id="nickname" value="AB_IN" size="47" /><font color="red" class="nickname_tip" data-exist="0"></font></li>
+                                <li><span></span><input type="submit" class="btn1" value="100人人钻修改" /></li>
+                            </ul>
+                        <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                        </dd>
+                    </dl>
+                </div>
+
+<script>
+$(function(){
+  $('#changeNickname').toggle(function(){
+    $('#nicknameBox').show();
+  },function(){
+    $('#nicknameBox').hide();
+  });
+  $('#form_nickname').submit(function(envent){
+    envent.preventDefault();
+    var nickname = $('#nickname').val();
+    var uid = $('#uid').val();
+    $.ajax({
+      type: 'POST',
+      url: '/user/user/update_nickname',
+      data: {'nickname':nickname,'uid':uid},
+      success: function(R){
+        if (R.status == 1) {
+          GLOBAL.ShowMsg(R.info, function() {
+              window.location.reload();
+          });
+        } else {
+          GLOBAL.ShowMsg(R.info);
+        }
+      }
+    });
+  });
+})
+
+/*修改密码部分手机验证码功能区域*/
+$('#change_pwd_1').click(function(){
+  $('#form_passwd li.oldpasswd').show();
+  $('#form_passwd li.change_pwd_phone').hide();
+});
+$('#change_pwd_2').click(function(){
+  $('#form_passwd li.oldpasswd').hide();
+  $('#form_passwd li.change_pwd_phone').show();
+});
+
+$('#form_passwd input[name=change_pwd_get_sms]').click(function(){
+  var phone_area = $('#form_passwd select[name=phone_area]').val();
+  var phone_number = $('#form_passwd input[name=phone_number]').val();
+  var $button = $(this);
+
+  if(!phone_area || !phone_number){
+    GLOBAL.ShowMsg('必须填写手机号码');
+    return false;
+  }
+
+  $.post('/user/login/get_sms_verify',{phone_area:phone_area,phone_number:phone_number},function(R){
+    if(R.status==1){
+      GLOBAL.ShowMsg('发送完成,请注意查看你的手机短信');
+      $button.attr('disabled','disabled');
+
+      var time = 60;
+      var timer = setInterval(function(){
+        if(time==0){
+          $button.val('获取短信验证码').attr('disabled',false);
+          clearInterval(timer);
+        }else{
+          $button.val('等待'+(time--)+'秒后重试');
+        }
+      },1000);
+    }else{
+      GLOBAL.ShowMsg(R.info);
+    }
+  },'json')
+})
+</script>
+
+<div class="clearfix"></div>
+<div class="u_p_set">
+  <dl class="ziliao_dl user_phone">
+      <dt><h2>修改邮箱</h2></dt>
+      <dd>
+                        <ul class="ziliao_ul" id="has_email">
+                  <li>
+                      <span>当前邮箱</span><font color="#3474F9">liusy200708@163.com</font>，
+                      如需修改请点击<a href="/user/password/forgot" class="f0">修改</a>。
+                  </li>
+              </ul>
+              <form method="post" id="update_email_form" style="display:block;">
+                  <ul class="ziliao_ul" id="update_email" style="display:none;">
+                      <li>                          
+                          <b>当前邮箱liusy200708@163.com</b><input id="old_email" class="btn1" value="获取邮件验证码"  size="13" />&nbsp;&nbsp;
+                      </li>
+                      <li>                          
+                          <font>验证码</font><input type="text" class="userInput" placeholder="请输入验证码" name="code" maxlength="6" size="34" />
+                      </li>                          
+                          <font>新邮箱</font><input type="text" class="userInput" placeholder="请输入新的邮箱地址" name="email" size="34" /><br>
+                      <li>
+                          <input type="submit" class="btn1" value="提交"/>
+                      </li>
+                  </ul>
+              <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>      </dd>
+  </dl>
+</div>
+
+
+<div class="clearfix"></div>
+<div class="u_p_set">
+    <dl class="ziliao_dl user_phone">
+    <dt><h2 class="bind-phone">手机号码绑定</h2></dt>
+        <dd>
+            <form method="post" id="send_mobile_code_new">
+                    <br>
+                    <li>                        
+                        <span>绑定手机号</span><select name="area">
+                            <option value="86" style="width: 80px">86-中国</option><option value="1" style="width: 80px">1-美国</option><option value="1" style="width: 80px">1-加拿大</option><option value="7" style="width: 80px">7-俄罗斯</option><option value="7" style="width: 80px">7-哈萨克斯坦</option><option value="20" style="width: 80px">20-埃及</option><option value="27" style="width: 80px">27-南非</option><option value="30" style="width: 80px">30-希腊</option><option value="31" style="width: 80px">31-荷兰</option><option value="32" style="width: 80px">32-比利时</option><option value="33" style="width: 80px">33-法国</option><option value="34" style="width: 80px">34-西班牙</option><option value="36" style="width: 80px">36-匈牙利</option><option value="39" style="width: 80px">39-意大利</option><option value="40" style="width: 80px">40-罗马尼亚</option><option value="41" style="width: 80px">41-瑞士</option><option value="43" style="width: 80px">43-奥地利</option><option value="44" style="width: 80px">44-英国</option><option value="45" style="width: 80px">45-丹麦</option><option value="46" style="width: 80px">46-瑞典</option><option value="47" style="width: 80px">47-挪威</option><option value="48" style="width: 80px">48-波兰</option><option value="49" style="width: 80px">49-德国</option><option value="51" style="width: 80px">51-秘鲁</option><option value="52" style="width: 80px">52-墨西哥</option><option value="53" style="width: 80px">53-古巴</option><option value="54" style="width: 80px">54-阿根廷</option><option value="55" style="width: 80px">55-巴西</option><option value="56" style="width: 80px">56-智利</option><option value="57" style="width: 80px">57-哥伦比亚</option><option value="58" style="width: 80px">58-委内瑞拉</option><option value="60" style="width: 80px">60-马来西亚</option><option value="61" style="width: 80px">61-澳大利亚</option><option value="62" style="width: 80px">62-印度尼西亚</option><option value="63" style="width: 80px">63-菲律宾</option><option value="64" style="width: 80px">64-新西兰</option><option value="65" style="width: 80px">65-新加坡</option><option value="66" style="width: 80px">66-泰国</option><option value="81" style="width: 80px">81-日本</option><option value="82" style="width: 80px">82-韩国</option><option value="84" style="width: 80px">84-越南</option><option value="90" style="width: 80px">90-土耳其</option><option value="91" style="width: 80px">91-印度</option><option value="92" style="width: 80px">92-巴基斯坦</option><option value="93" style="width: 80px">93-阿富汗</option><option value="94" style="width: 80px">94-斯里兰卡</option><option value="95" style="width: 80px">95-缅甸</option><option value="98" style="width: 80px">98-伊朗</option><option value="211" style="width: 80px">211-南苏丹</option><option value="212" style="width: 80px">212-摩洛哥</option><option value="213" style="width: 80px">213-阿尔及利亚</option><option value="216" style="width: 80px">216-突尼斯</option><option value="218" style="width: 80px">218-利比亚</option><option value="220" style="width: 80px">220-冈比亚</option><option value="221" style="width: 80px">221-塞内加尔</option><option value="222" style="width: 80px">222-毛里塔尼亚</option><option value="223" style="width: 80px">223-马里</option><option value="224" style="width: 80px">224-几内亚</option><option value="225" style="width: 80px">225-象牙海岸</option><option value="226" style="width: 80px">226-布基纳法索</option><option value="227" style="width: 80px">227-尼日尔</option><option value="228" style="width: 80px">228-多哥</option><option value="229" style="width: 80px">229-贝宁</option><option value="230" style="width: 80px">230-毛里求斯</option><option value="231" style="width: 80px">231-利比里亚</option><option value="232" style="width: 80px">232-塞拉利昂</option><option value="233" style="width: 80px">233-加纳</option><option value="234" style="width: 80px">234-尼日利亚</option><option value="235" style="width: 80px">235-乍得</option><option value="236" style="width: 80px">236-中非共和国</option><option value="237" style="width: 80px">237-喀麦隆</option><option value="238" style="width: 80px">238-开普</option><option value="239" style="width: 80px">239-圣多美</option><option value="240" style="width: 80px">240-赤道几内亚</option><option value="241" style="width: 80px">241-加蓬</option><option value="242" style="width: 80px">242-刚果共和国</option><option value="243" style="width: 80px">243-刚果民主共和国</option><option value="244" style="width: 80px">244-安哥拉</option><option value="245" style="width: 80px">245-几内亚比绍共和国</option><option value="247" style="width: 80px">247-阿森松岛</option><option value="248" style="width: 80px">248-塞舌尔</option><option value="249" style="width: 80px">249-苏丹</option><option value="250" style="width: 80px">250-卢旺达</option><option value="251" style="width: 80px">251-埃塞俄比亚</option><option value="252" style="width: 80px">252-索马里</option><option value="253" style="width: 80px">253-吉布提</option><option value="254" style="width: 80px">254-肯尼亚</option><option value="255" style="width: 80px">255-坦桑尼亚</option><option value="256" style="width: 80px">256-乌干达</option><option value="257" style="width: 80px">257-布隆迪</option><option value="258" style="width: 80px">258-莫桑比克</option><option value="260" style="width: 80px">260-赞比亚</option><option value="261" style="width: 80px">261-马达加斯加</option><option value="262" style="width: 80px">262-留尼汪</option><option value="263" style="width: 80px">263-津巴布韦</option><option value="264" style="width: 80px">264-纳米比亚</option><option value="265" style="width: 80px">265-马拉维</option><option value="266" style="width: 80px">266-莱索托</option><option value="267" style="width: 80px">267-博茨瓦纳</option><option value="268" style="width: 80px">268-斯威士兰</option><option value="269" style="width: 80px">269-科摩罗</option><option value="269" style="width: 80px">269-马约特</option><option value="297" style="width: 80px">297-阿鲁巴</option><option value="298" style="width: 80px">298-法罗群岛</option><option value="299" style="width: 80px">299-格陵兰岛</option><option value="350" style="width: 80px">350-直布罗陀</option><option value="351" style="width: 80px">351-葡萄牙</option><option value="352" style="width: 80px">352-卢森堡</option><option value="353" style="width: 80px">353-爱尔兰</option><option value="354" style="width: 80px">354-冰岛</option><option value="355" style="width: 80px">355-阿尔巴尼亚</option><option value="356" style="width: 80px">356-马耳他</option><option value="357" style="width: 80px">357-塞浦路斯</option><option value="358" style="width: 80px">358-芬兰</option><option value="359" style="width: 80px">359-保加利亚</option><option value="370" style="width: 80px">370-立陶宛</option><option value="371" style="width: 80px">371-拉脱维亚</option><option value="372" style="width: 80px">372-爱沙尼亚</option><option value="373" style="width: 80px">373-摩尔多瓦</option><option value="374" style="width: 80px">374-亚美尼亚</option><option value="375" style="width: 80px">375-白俄罗斯</option><option value="376" style="width: 80px">376-安道尔</option><option value="377" style="width: 80px">377-摩纳哥</option><option value="378" style="width: 80px">378-圣马力诺</option><option value="380" style="width: 80px">380-乌克兰</option><option value="381" style="width: 80px">381-塞尔维亚</option><option value="382" style="width: 80px">382-黑山</option><option value="385" style="width: 80px">385-克罗地亚</option><option value="386" style="width: 80px">386-斯洛文尼亚</option><option value="387" style="width: 80px">387-波斯</option><option value="389" style="width: 80px">389-马其顿</option><option value="420" style="width: 80px">420-捷克</option><option value="421" style="width: 80px">421-斯洛伐克</option><option value="423" style="width: 80px">423-列支敦士登</option><option value="501" style="width: 80px">501-伯利兹</option><option value="502" style="width: 80px">502-瓜地马拉</option><option value="503" style="width: 80px">503-萨尔瓦多</option><option value="504" style="width: 80px">504-洪都拉斯</option><option value="505" style="width: 80px">505-尼加拉瓜</option><option value="506" style="width: 80px">506-哥斯达黎加</option><option value="507" style="width: 80px">507-巴拿马</option><option value="508" style="width: 80px">508-圣彼埃尔和密克隆岛</option><option value="509" style="width: 80px">509-海地</option><option value="590" style="width: 80px">590-瓜德罗普岛</option><option value="591" style="width: 80px">591-玻利维亚</option><option value="592" style="width: 80px">592-圭亚那</option><option value="593" style="width: 80px">593-厄瓜多尔</option><option value="594" style="width: 80px">594-法属圭亚那</option><option value="595" style="width: 80px">595-巴拉圭</option><option value="596" style="width: 80px">596-马提尼克</option><option value="597" style="width: 80px">597-苏里南</option><option value="598" style="width: 80px">598-乌拉圭</option><option value="599" style="width: 80px">599-库拉索</option><option value="670" style="width: 80px">670-东帝汶</option><option value="673" style="width: 80px">673-文莱</option><option value="675" style="width: 80px">675-巴布亚新几</option><option value="676" style="width: 80px">676-汤加</option><option value="677" style="width: 80px">677-所罗门群岛</option><option value="678" style="width: 80px">678-瓦努阿图</option><option value="679" style="width: 80px">679-斐济</option><option value="680" style="width: 80px">680-帕劳</option><option value="682" style="width: 80px">682-库克群岛</option><option value="685" style="width: 80px">685-萨摩亚</option><option value="686" style="width: 80px">686-基里巴斯</option><option value="687" style="width: 80px">687-新喀里多尼亚</option><option value="689" style="width: 80px">689-法属波利尼</option><option value="852" style="width: 80px">852-中国香港</option><option value="853" style="width: 80px">853-澳门</option><option value="855" style="width: 80px">855-柬埔寨</option><option value="856" style="width: 80px">856-老挝</option><option value="880" style="width: 80px">880-孟加拉国</option><option value="886" style="width: 80px">886-中国台湾</option><option value="960" style="width: 80px">960-马尔代夫</option><option value="961" style="width: 80px">961-黎巴嫩</option><option value="962" style="width: 80px">962-约旦</option><option value="963" style="width: 80px">963-叙利亚</option><option value="964" style="width: 80px">964-伊拉克</option><option value="965" style="width: 80px">965-科威特</option><option value="966" style="width: 80px">966-沙特阿拉伯</option><option value="967" style="width: 80px">967-也门</option><option value="968" style="width: 80px">968-阿曼</option><option value="970" style="width: 80px">970-巴勒斯</option><option value="971" style="width: 80px">971-阿拉伯</option><option value="972" style="width: 80px">972-以色列</option><option value="973" style="width: 80px">973-巴林</option><option value="974" style="width: 80px">974-卡塔尔</option><option value="975" style="width: 80px">975-不丹</option><option value="976" style="width: 80px">976-蒙古</option><option value="977" style="width: 80px">977-尼泊尔</option><option value="992" style="width: 80px">992-塔吉克斯坦</option><option value="993" style="width: 80px">993-土库曼斯坦</option><option value="994" style="width: 80px">994-阿塞拜疆</option><option value="995" style="width: 80px">995-格鲁吉亚</option><option value="996" style="width: 80px">996-吉尔吉斯斯坦</option><option value="998" style="width: 80px">998-乌兹别克斯坦</option><option value="1242" style="width: 80px">1242-巴哈马</option><option value="1246" style="width: 80px">1246-巴巴多斯</option><option value="1264" style="width: 80px">1264-安圭拉</option><option value="1268" style="width: 80px">1268-安提瓜</option><option value="1345" style="width: 80px">1345-开曼群岛</option><option value="1441" style="width: 80px">1441-百慕大群岛</option><option value="1473" style="width: 80px">1473-格林纳达</option><option value="1649" style="width: 80px">1649-特克斯和凯科斯群岛</option><option value="1664" style="width: 80px">1664-蒙特塞拉特岛</option><option value="1671" style="width: 80px">1671-关岛</option><option value="1684" style="width: 80px">1684-美属萨摩亚</option><option value="1721" style="width: 80px">1721-圣马丁岛（荷兰部分）</option><option value="1758" style="width: 80px">1758-圣露西亚</option><option value="1767" style="width: 80px">1767-多米尼加</option><option value="1784" style="width: 80px">1784-圣文森特和格林纳丁斯</option><option value="1787" style="width: 80px">1787-波多黎各</option><option value="1809" style="width: 80px">1809-多明尼加共和国</option><option value="1868" style="width: 80px">1868-特立尼</option><option value="1869" style="width: 80px">1869-圣基</option><option value="1876" style="width: 80px">1876-牙买加</option>                        </select>
+                        <input type="hidden" name="stype" value="new" />
+                        <input type="text" class="userInput" placeholder="请填入您的手机号" name="mobile" size="25" />
+                        <input id="b_btn1" type="submit" class="btn1" value="获取短信验证码"  size="13" />
+                        <font class="f4">*今后异常地区登录将会要求短信验证</font>
+                    </li>
+                <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                <form method="post" id="bind_mobile">
+                    <br>
+                    <li>                        
+                        <span>短信验证码</span><input type="text" class="userInput" placeholder="验证码" name="code" maxlength="6" size="7" />
+                        <input type="submit" class="btn1" value="提交" />
+                    </li>
+                <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                    </dd>
+    </dl>
+</div>
+
+<script>
+$(function(){
+    //修改邮箱切换效果
+    $("#update_btn").click(function(){
+        $("#update_email").toggle();
+    });
+    //给新邮箱发邮件
+    $('#sms_email_form').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/sms_mail_logined";
+        var data = $('#sms_email_form').serialize();
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            success: function(R){
+                if (R.status == 1) {
+                    $("#new_email").attr('disabled','disabled');
+                    var time = 60;
+                    var timer = setInterval(function(){
+                        if(time < 0){
+                            $("#new_email").val('获取验证码').attr('disabled',false);
+                            clearInterval(timer);
+                        }else{
+                            $("#new_email").val('等待' + (time--) + '秒后重试');
+                        }
+                    },1000);
+                }
+                GLOBAL.ShowMsg(R.info);
+            }
+        });
+    });
+    //绑定邮箱
+    $('#bind_email_form').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/bind_email";
+        var data = $('#bind_email_form').serialize();
+        ajax_post(url, data);
+    });
+    //给原始邮箱发邮件
+    $('#old_email').click(function () {
+        var url = "/user/user/sms_mail_logined?scene=update_email";
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(R){
+                if (R.status == 1) {
+                    $("#old_email").attr('disabled','disabled');
+                    var time = 60;
+                    var timer = setInterval(function(){
+                        if(time < 0){
+                            $("#old_email").val('获取验证码').attr('disabled',false);
+                            clearInterval(timer);
+                        }else{
+                            $("#old_email").val('等待' + (time--) + '秒后重试');
+                        }
+                    },1000);
+                }
+                GLOBAL.ShowMsg(R.info);
+            }
+        });
+    });
+    //修改邮箱
+    $('#update_email_form').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/update_email";
+        var data = $('#update_email_form').serialize();
+        ajax_post(url, data);
+    });
+
+    //修改手机切换效果
+    $("#unbind_btn").click(function(){
+        $("#unbind_mobile").toggle();
+    });
+    // 给新手机号发短信
+    $('#send_mobile_code_new').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/send_code_logined";
+        var data = $('#send_mobile_code_new').serialize();
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            success: function(R){
+                if (R.status == 1) {
+                    $("#b_btn1").attr('disabled','disabled');
+                    var time = 60;
+                    var timer = setInterval(function(){
+                        if(time < 0){
+                            $("#b_btn1").val('获取验证码').attr('disabled',false);
+                            clearInterval(timer);
+                        }else{
+                            $("#b_btn1").val('等待' + (time--) + '秒后重试');
+                        }
+                    },1000);
+                }
+                GLOBAL.ShowMsg(R.info);
+            }
+        });
+    });
+    // 绑定手机号
+    $('#bind_mobile').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/bind_mobile";
+        var data = $('#bind_mobile').serialize();
+        ajax_post(url, data);
+    });
+    // 给原始手机号发短信
+    $('#send_mobile_code_old').click(function () {
+        var url = "/user/user/send_code_logined?stype=old";
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(R){
+                if (R.status == 1) {
+                    $("#send_mobile_code_old").attr('disabled','disabled');
+                    var time = 60;
+                    var timer = setInterval(function(){
+                        if(time < 0){
+                            $("#send_mobile_code_old").val('获取验证码').attr('disabled',false);
+                            clearInterval(timer);
+                        }else{
+                            $("#send_mobile_code_old").val('等待' + (time--) + '秒后重试');
+                        }
+                    },1000);
+                }
+                GLOBAL.ShowMsg(R.info);
+            }
+        });
+    });
+
+    // 通过手机验证码解绑手机
+    $('#u_mobile').submit(function(envent){
+        envent.preventDefault();
+        var url = "/user/user/unbind_mobile";
+        var data = $('#u_mobile').serialize();
+        ajax_post(url, data);
+    });
+
+    function ajax_post(url, data) {
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            success: function(R){
+                if (R.status == 1) {
+                    GLOBAL.ShowMsg(R.info, function() {
+                        window.location.reload();
+                    });
+                } else {
+                    GLOBAL.ShowMsg(R.info);
+                }
+            }
+        });
+    }
+})
+</script>
+                <div class="clearfix"></div>
+                <div class="u_p_set">
+                  <dl class="ziliao_dl">
+                    <a name="qa"><dt><h2>安全问题</h2></dt></a>
+                    <dd>
+                      <ul class="ziliao_ul" id="user_qa" style="display: none;">
+                        <li>你已设置了安全问题,如需修改,请点击<a style="color:blue">编辑</a>回答下面的问题</li>
+                        <li class="user_qa_list" style="display: none;"><span>问题</span><select name="que" disabled="true"><option value="1">你对象的生日是什么时候</option><option value="2">你最好的朋友或闺蜜叫什么名字</option><option value="3">你的车牌号是什么</option><option value="4">你小学班主任叫什么名字</option><option value="5">你初中班主任叫什么名字</option><option value="6">你对象叫什么名字</option><option value="7">你的初恋叫什么名字</option><option value="8">你最喜欢的一款游戏叫什么</option><option value="9">你最喜欢的一部电影叫什么</option><option value="10">你最喜欢的影星叫什么名字</option></select></li>
+                        <li class="user_qa_list" style="display: none;"><span>答案</span><input type="text" name="ans" class="userInput"  size="47"></li>
+                        <li class="user_qa_list" style="display: none;"><span></span><input type="button" class="btn1 save" value="验证答案"></li>
+                      </ul>
+                    <form method="post" id="form_qa">
+                      <ul class="ziliao_ul" id="qa_list" style="display: none;">
+
+                        <li><span>问题</span><select class="qa" name="question[]"><option value="1">你对象的生日是什么时候</option><option value="2">你最好的朋友或闺蜜叫什么名字</option><option value="3">你的车牌号是什么</option><option value="4">你小学班主任叫什么名字</option><option value="5">你初中班主任叫什么名字</option><option value="6">你对象叫什么名字</option><option value="7">你的初恋叫什么名字</option><option value="8">你最喜欢的一款游戏叫什么</option><option value="9">你最喜欢的一部电影叫什么</option><option value="10">你最喜欢的影星叫什么名字</option></select></li>
+                        <li><span>答案</span><input type="text" class="userInput answer" name="answer[]" value="" size="47" /></li>
+
+                        <li><span>问题</span><select class="qa" name="question[]"><option value="1">你对象的生日是什么时候</option><option value="2">你最好的朋友或闺蜜叫什么名字</option><option value="3">你的车牌号是什么</option><option value="4">你小学班主任叫什么名字</option><option value="5">你初中班主任叫什么名字</option><option value="6">你对象叫什么名字</option><option value="7">你的初恋叫什么名字</option><option value="8">你最喜欢的一款游戏叫什么</option><option value="9">你最喜欢的一部电影叫什么</option><option value="10">你最喜欢的影星叫什么名字</option></select></li>
+                        <li><span>答案</span><input type="text" class="userInput answer" name="answer[]" value="" size="47" /></li>
+
+                        <li><span>问题</span><select class="qa" name="question[]"><option value="1">你对象的生日是什么时候</option><option value="2">你最好的朋友或闺蜜叫什么名字</option><option value="3">你的车牌号是什么</option><option value="4">你小学班主任叫什么名字</option><option value="5">你初中班主任叫什么名字</option><option value="6">你对象叫什么名字</option><option value="7">你的初恋叫什么名字</option><option value="8">你最喜欢的一款游戏叫什么</option><option value="9">你最喜欢的一部电影叫什么</option><option value="10">你最喜欢的影星叫什么名字</option></select></li>
+                        <li><span>答案</span><input type="text" class="userInput answer" name="answer[]" value="" size="47" /></li>
+
+                        <li><span></span><input type="button" class="btn1 qa_save" value="提交修改" /></li>
+                      </ul>
+                    <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                    </dd>
+                  </dl>
+                </div>
+<script>
+$(document).ready(function(){
+  var has_qa = 0;
+  has_qa?$('#user_qa').show():$('#qa_list').show();
+  $('#user_qa').find('a').click(function(){
+    $.getJSON('/user/user/random_question',function(R){
+      if(R.status==1){
+        $('select[name=que]').val(R.data);
+        $('#user_qa li.user_qa_list').show();
+      }else{
+        GLOBAL.ShowMsg(R.info);
+      }
+    });
+  }).end().find('input:button.save').click(function(){
+    var question = $('select[name=que]').val();
+    var answer = $('input[name=ans]').val();
+    if(!answer){
+      GLOBAL.ShowMsg('请输入答案');
+      return false;
+    }
+    $.getJSON('/user/user/verify_answer',{question:question,answer:answer},function(R){
+      if(R.status==1){
+        $('#user_qa').hide();
+        $('#qa_list').show();
+      }else{
+        if(R.data==-1){
+          GLOBAL.ShowMsg('失败次数太多,请稍后再试');
+          $('#user_qa li.user_qa_list').hide();
+        }else{
+          GLOBAL.ShowMsg(R.info);
+          $('select[name=que]').val(R.data);
+          $('input[name=ans]').val('');
+        }
+      }
+    });
+  });
+  $('input.qa_save').click(function(){
+    var q = [$('select.qa:eq(0)').val(),$('select.qa:eq(1)').val(),$('select.qa:eq(2)').val()];
+    var a = [$('input.answer:eq(0)').val(),$('input.answer:eq(1)').val(),$('input.answer:eq(2)').val()];
+    if($.unique(q).length<3){
+      GLOBAL.ShowMsg('安全问题不能相同');
+      return false;
+    }
+    for(i=0;i<a.length;i++){
+      if(!$.trim(a[i])){
+        GLOBAL.ShowMsg('必须填写所有的答案');
+        return false;
+      }
+    }
+
+    $.post('/user/user/save_qa',$('form#form_qa').serializeArray(),function(R){
+      if(R.status==1){
+        GLOBAL.ShowMsg('保存成功',function(){
+            history.go(0);
+        })
+      }else{
+        GLOBAL.ShowMsg(R.info);
+      }
+    },'json');
+  });
+});
+</script>
+                <div class="clearfix"></div>
+                <div class="u_p_set">
+                    <dl class="ziliao_dl">
+                        <dt><h2>隐私设置</h2></dt>
+                        <dd>
+                            <form method="post" name="" id="form_setting">
+                            <ul class="ziliao_ul">
+                                <li>                                    
+                                    <strong>查看我的资料</strong><label><input type="radio" name="profile" value="1" />允许</label>
+                                    <label><input type="radio" name="profile" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>查看我的收藏</strong><label><input type="radio" name="favorite" value="1" />允许</label>
+                                    <label><input type="radio" name="favorite" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>给我发私信</strong><label><input type="radio" name="message" value="1" />允许</label>
+                                    <label><input type="radio" name="message" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>查看我的资源</strong><label><input type="radio" name="resource" value="1" />允许</label>
+                                    <label><input type="radio" name="resource" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>查看我的文章</strong><label><input type="radio" name="article" value="1" />允许</label>
+                                    <label><input type="radio" name="article" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>查看我的字幕</strong><label><input type="radio" name="subtitle" value="1" />允许</label>
+                                    <label><input type="radio" name="subtitle" value="0" />不允许</label>
+                                </li>
+                                <li>                                    
+                                    <strong>查看我的求档</strong><label><input type="radio" name="help" value="1" />允许</label>
+                                    <label><input type="radio" name="help" value="0" />不允许</label>
+                                </li>
+                                <li><span></span><input type="submit" class="btn1 form_setting_submit" value="提交修改" /></li>
+                            </ul>
+                            <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="clearfix"></div>
+
+                <div class="u_p_set">
+                    <dl class="ziliao_dl">
+                        <dt><h2>数据统计</h2></dt>
+                        <dd>
+                            <ul class="ziliao_ul data-summary">
+                                <li><span>注册日期</span><font class="f_u0">2020-06-25 16:25:00 (1天前)</font></li>
+                                <li><span>最后登录</span><font class="f_u0">2020-06-25 17:00:18 (0天前)</font></li>
+                                <li><span>帖子主题数</span><font class="f_u0"></font></li>
+                                <li><span>短评数</span><font class="f_u0">0</font></li>
+                                <li><span>已连续登录</span><font class="f_u0">1 天</font></li>
+                            </ul>
+
+                            <ul class="ziliao_ul">
+                                <li><strong>扩展用户组</strong><b class="f_u0">
+                                                                </b></li>
+                                <li class="to_brstyle clearfix">
+                                    <strong>头衔</strong>
+                                    <div class="fl">
+                                                                           </div>
+                                </li>
+                            </ul>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="clearfix"></div>
+                <div class="u_p_set">
+                    <dl class="ziliao_dl">
+                        <dt><h2>详细资料</h2></dt>
+                        <dd>
+        <form method="post" id="forum_profile">
+                            <ul class="ziliao_ul">
+                            <li>
+                                <span>性别</span><label><input type="radio" name="sex" class="sex" value="0" />保密</label><label><input type="radio" name="sex" class="sex" value="1" />男</label><label><input type="radio" name="sex" class="sex" value="2" />女</label>
+                            </li>
+                            <li>                            
+                                <span>生日</span><input type="text" name="birthday" value="0000-00-00" onclick="calendar.show(this);" id="premiere"  />
+                                <label><input type="radio" name="is_n" class="is_n" value="0" />公历</label><label><input type="radio" name="is_n" class="is_n" value="1" />农历</label>
+                            </li>
+                            <li>                            
+                                <span>职业</span><input type="text" class="userInput" name="job" value="" size="47" />
+                            </li>
+                            <li>                            
+                                <span>国家地区</span><select name="country" class="userInput" id="country">
+                                    <option value="1">中国 (中国)</option><option value="2">千里达与托贝哥共和国 (Trinidad and Tobago)</option><option value="3">土瓦鲁 (Tuvalu)</option><option value="4">土耳其 (Türkiye)</option><option value="5">土库曼 (Türkmenistan)</option><option value="6">不丹 (འབྲུག་ཡུལ)</option><option value="7">中非共和国 (République Centrafricaine)</option><option value="9">丹麦 (Danmark)</option><option value="10">厄瓜多 (Ecuador)</option><option value="11">厄利垂亚 (Ertra)</option><option value="12">巴布亚纽几内亚 (Papua New Guinea)</option><option value="13">巴西 (Brasil)</option><option value="14">巴贝多 (Barbados)</option><option value="15">巴拉圭 (Paraguay)</option><option value="16">巴林 (البحرين)</option><option value="17">巴哈马 (Bahamas)</option><option value="18">巴拿马 (Panamá)</option><option value="19">巴勒斯坦领土 (Palestinian Territory)</option><option value="20">巴基斯坦 (پاکستان)</option><option value="21">日本</option><option value="22">比利时 (België)</option><option value="23">牙买加 (Jamaica)</option><option value="24">以色列 (ישראל)</option><option value="25">加拿大 (Canada)</option><option value="26">加彭 (Gabon)</option><option value="27">北马里亚纳群岛 (Northern Mariana Islands)</option><option value="28">北韩 (조선)</option><option value="29">卡达 (قطر)</option><option value="30">古巴 (Cuba)</option><option value="31">史瓦济兰 (Swaziland)</option><option value="32">中国台湾</option><option value="33">尼日 (Niger)</option><option value="34">尼加拉瓜 (Nicaragua)</option><option value="35">尼泊尔 (नेपाल)</option><option value="36">布干维岛 (Bouvet Island)</option><option value="37">布吉纳法索 (Burkina Faso)</option><option value="38">瓜地马拉 (Guatemala)</option><option value="39">瓜达罗普 (Guadeloupe)</option><option value="40">瓦利斯群岛和富图纳群岛 (Wallis and Futuna)</option><option value="41">甘比亚 (Gambia)</option><option value="42">白俄罗斯 (Белару́сь)</option><option value="43">皮特康 (Pitcairn)</option><option value="44">立陶宛 (Lietuva)</option><option value="45">伊拉克 (العراق)</option><option value="46">伊朗 (ایران)</option><option value="47">冰岛 (Ísland)</option><option value="48">列支敦士登 (Liechtenstein)</option><option value="49">匈牙利 (Magyarország)</option><option value="50">印尼 (Indonesia)</option><option value="51">印度 (India)</option><option value="52">吉布地 (Djibouti)</option><option value="53">吉里巴斯 (Kiribati)</option><option value="54">吉尔吉斯 (Кыргызстан)</option><option value="55">多明尼加共和国 (Dominican Republic)</option><option value="56">多明尼克 (Dominica)</option><option value="57">多哥 (Togo)</option><option value="58">安地卡及巴布达 (Antigua and Barbuda)</option><option value="59">安哥拉 (Angola)</option><option value="60">安道尔共和国 (Andorra)</option><option value="61">安归拉岛 (Anguilla)</option><option value="62">托克劳群岛 (Tokelau)</option><option value="63">百慕达 (Bermuda)</option><option value="64">衣索比亚 (Ityop&#39;iya)</option><option value="65">西班牙 (España)</option><option value="66">西撒哈拉 (الصحراء الغربية)</option><option value="67">克罗埃西亚 (Hrvatska)</option><option value="68">冷岸及央棉群岛 (Svalbard and Jan Mayen)</option><option value="69">利比亚 (ليبيا)</option><option value="70">宏都拉斯 (Honduras)</option><option value="71">希腊 (&#39;Eλλας)</option><option value="72">沙乌地阿拉伯 (المملكة العربية السعودية)</option><option value="73">汶莱 (Brunei Darussalam)</option><option value="74">贝里斯 (Belize)</option><option value="75">贝南 (Bénin)</option><option value="76">赤道几内亚 (Guinea Ecuatorial)</option><option value="77">辛巴威 (Zimbabwe)</option><option value="78">亚美尼亚 (Հայաստան)</option><option value="79">亚赛拜然 (Azərbaycan)</option><option value="80">坦尚尼亚 (Tanzania)</option><option value="81">奈及利亚 (Nigeria)</option><option value="82">委内瑞拉 (Venezuela)</option><option value="83">孟加拉 (বাংলাদেশ)</option><option value="84">尚比亚 (Zambia)</option><option value="85">帛琉 (Belau)</option><option value="86">所罗门群岛 (Solomon Islands)</option><option value="87">拉脱维亚 (Latvija)</option><option value="88">东加 (Tonga)</option><option value="89">东帝汶 (Timor-Leste)</option><option value="90">波士尼亚-赫塞哥维纳 (Bosna i Hercegovina)</option><option value="91">波札那 (Botswana)</option><option value="92">波多黎克 (Puerto Rico)</option><option value="93">波兰 (Polska)</option><option value="94">法国 (France)</option><option value="95">法罗群岛 (Faroe Islands)</option><option value="96">法属圭亚那 (French Guiana)</option><option value="97">法属波里尼西亚 (French Polynesia)</option><option value="98">法属南部属地 (French Southern Territories)</option><option value="99">直布罗陀 (Gibraltar)</option><option value="100">肯亚 (Kenya)</option><option value="101">芬兰 (Suomi)</option><option value="102">阿拉伯联合大公国 (الإمارات العربيّة المتّحدة)</option><option value="103">阿根廷 (Argentina)</option><option value="104">阿曼 (عمان)</option><option value="105">阿富汗 (افغانستان)</option><option value="106">阿尔及利亚 (الجزائر)</option><option value="107">阿尔巴尼亚 (Shqipëria)</option><option value="108">阿鲁巴岛 (Aruba)</option><option value="109">保加利亚 (България)</option><option value="110">俄罗斯 (Россия)</option><option value="111">南非 (South Africa)</option><option value="112">南乔治亚与南桑威奇群岛 (South Georgia and the South Sandwich Islands)</option><option value="113">南极洲 (Antarctica)</option><option value="114">南韩 (한국)</option><option value="115">哈萨克 (Қазақстан)</option><option value="116">柬埔寨 (Kampuchea)</option><option value="117">查德 (Tchad)</option><option value="118">玻利维亚 (Bolivia)</option><option value="119">科克群岛 (Cocos Islands)</option><option value="120">科克群岛 (Cook Islands)</option><option value="121">科威特 (الكويت)</option><option value="122">科摩洛 (Comores)</option><option value="123">突尼西亚 (تونس)</option><option value="124">约旦 (الاردن)</option><option value="125">美国 (United States)</option><option value="126">美属外部小群岛 (United States minor outlying islands)</option><option value="127">美属维京群岛 (Virgin Islands, U.S.)</option><option value="128">未知的国家</option><option value="129">英国(United Kingdom)</option>                                </select>
+                            </li>
+                            <li>                            
+                                <span>详细地址</span><input type="text" class="userInput" name="address" id="address" value="" size="47" />
+                            </li>
+                            <li>                            
+                                <span></span><input type="submit" class="btn1 forum_profile_submit" value="提交修改" /></li>
+                            </ul>
+        <input type="hidden" name="__hash__" value="426104dda37ce61863d304b22664030b" /></form>
+                        </dd>
+                    </dl>
+                </div>
+          </div>
+    	</div>
+     </div>
+</div>
+<script type="text/javascript" src="http://js.jstucdn.com/js/calendar.js"></script>
+<script>
+var uid = 9660707;
+  $(function($) {
+    var user_setting = {"profile":"1","favorite":"1","message":"1","resource":"1","article":"1","subtitle":"1","help":"1"};
+    for(key in user_setting){
+      $('form#form_setting').find('input[name='+key+'][value='+user_setting[key]+']').attr('checked',true).parent().addClass('check');
+    }
+
+    //用户设置结束
+
+
+    var sex = "0";
+    if(!sex) sex = 0;
+    $(".sex[value="+sex+"]").attr("checked",true);
+    $(".sex[value="+sex+"]").parent().addClass("check");
+
+    var is_n = "0";
+    if(!is_n) is_n = 0;
+    $(".is_n[value="+is_n+"]").attr("checked",true);
+    $(".is_n[value="+is_n+"]").parent().addClass("check");
+
+    var country = "0";
+    if(!country) country = 1;
+    $("#country option[value='"+country+"']").attr("selected",true);
+
+
+
+
+  //用户详细信息提交
+  $(".forum_profile_submit").bind("click",function(e){
+
+     $.post("http://www.rrys2019.com/user/user/saveprofile",$("#forum_profile").serialize(),function(data){
+      data = eval("(" + data + ")");
+      if(data.status == 1)
+      {
+        alert(data.info);
+        location.href="";
+      }
+      else
+      {
+        alert(data.info);
+      }
+     }
+     );
+     return false;
+  });
+
+  //用户设置提交
+  $(".form_setting_submit").bind("click",function(){
+     $.post("http://www.rrys2019.com/user/user/savepseting",$("#form_setting").serialize(),function(R){
+      if(R.status==1){
+        alert('保存成功');
+        location.reload();
+      }
+     },'json');
+return false;
+  });
+
+  //密码设置提交
+
+  $(".form_passwd_submit").bind("click",function(e){
+
+     var oldpasswd = $("#oldpasswd").val();
+     var newpasswd = $("#newpasswd").val();
+     var renewpasswd = $("#renewpasswd").val();
+     var phone_area = $('#form_passwd select[name=phone_area]').val();
+     var phone_number = $('#form_passwd input[name=phone_number]').val();
+     var sms_verify = $('#form_passwd input[name=sms_verify]').val();
+
+     if(!oldpasswd && (!phone_area || !phone_number || !sms_verify)){
+        GLOBAL.ShowMsg('旧密码或手机号码以及验证码不能为空');
+        return false;
+     }
+    if(!newpasswd || !renewpasswd)
+    {
+      GLOBAL.ShowMsg("输入密码不能为空！");
+      return false;
+    }
+    if(newpasswd != renewpasswd)
+    {
+      GLOBAL.ShowMsg("两次输入密码不一致！");
+      return false;
+    }
+
+     $.post("http://www.rrys2019.com/user/user/savepassword",$("#form_passwd").serialize(),function(result){
+
+      if(result.status == 1)
+      {
+        GLOBAL.ShowMsg("修改成功！")
+        location.reload();
+      }
+      else
+      {
+        GLOBAL.ShowMsg(result.info)
+      }
+
+     },'json');
+return false;
+  });
+
+
+  $(".info_edit").live("click",function(e){
+
+    var edit_a = $(e.target);
+    var name=edit_a.parents("span").attr("title");
+    var edit_content = edit_a.prev("font").html()
+    edit_a.prev("font").html("<input size=10 type='text' name='"+name+"' value='"+edit_content+"'>");
+    $(e.target).attr("class","edit_post");
+    $(e.target).html("[提交]");
+
+  });
+
+  $(".edit_post").live("click",function(e)
+  {
+    var edit_name = $(e.target).prev("font").find("input").attr("name");
+    var edit_value = $(e.target).prev("font").find("input").attr("value");
+    $.ajax({
+       type: "POST",
+       url: "http://www.rrys2019.com/user/user/saveprofile",
+       data: edit_name+"="+edit_value,
+       success: function(data){
+       var result = eval("("+data+")");
+
+        if(result.status == 1)
+        {
+          alert("修改成功！")
+          location.reload();
+        }
+        else
+        {
+          alert(result.info)
+        }
+
+
+        $(e.target).prev("font").html(edit_value);
+        $(e.target).attr("class","info_edit");
+        $(e.target).html("[修改]");
+
+       }
+    });
+
+  });
+
+  $(".desc_edit").live("click",function(e){
+
+
+    var edit_content = $(e.target).prev("font").html();
+    $(e.target).prev("font").html("<input type='text' name='desc' size=80 value='"+edit_content+"'>");
+    $(e.target).attr("class","edit_post");
+    $(e.target).html("[提交]");
+
+  });
+
+
+
+
+});
+
+
+$(".select_get_city").change(function(e){
+
+  var pid= $(e.target).val();
+    $.post("http://www.rrys2019.com/user/user/ajax_get_city_list","pid="+pid,function(data){
+         var result = eval("("+data+")");
+
+        if(result.status == 1)
+        {
+
+          var city_list = result.data.city_list;
+
+          var html = "<option value=0>选择城市</option>";
+          for(var i=0;i <city_list.length; i++ )
+          {
+              html += '<option value="'+city_list[i]["id"]+'">'+city_list[i]["name"]+'</option>';
+
+          }
+
+          $(e.target).next("select").html(html);
+
+        }
+        else
+        {
+
+        }
+
+     });
+
+
+});
+$('a.user_upgrade_rule').toggle(function(){
+  var pos = $(this).position();
+  $('#upgrade_rule').css({position:'absolute',left:pos.left-150,top:pos.top+$(this).outerHeight()}).show();
+},function(){
+  $('#upgrade_rule').hide();
+});
+$('a#rule_close').click(function(){
+  $('a.user_upgrade_rule').trigger('click');
+});
+
+$('form#form_basic').submit(function(){
+  $.post('/user/user/save_basic',{uid:uid,signature:$('input[name=signature]').val()},function(R){
+    if(R.status==1){
+      alert('修改成功');
+      window.location.reload();
+    }else{
+      alert('操作失败,请稍后重试');
+    }
+  },'json');
+  return false;
+});
+</script>
+<div style="text-align:center;margin-top:10px">
+<script type="text/javascript">
+if(is_ga_a()) document.write('<script src="http://g.ousns.net/ga-728-m3.js?232" type="text/javascript"><\/script>');
+//tb-ssp-950x90
+// tmp document.write('<script charset="gbk" src="http://p.tanx.com/ex?i=mm_111117185_10092486_42796389"><\/script>');
+</script>
+</div>
+
+
+<script src="http://tu.jstucdn.com/g3/tool30.js" type="text/javascript"></script>
+<!-- <script src="http://tu.jstucdn.com/g3/tool8-11.js" type="text/javascript"></script> -->
+
+<div class="lx167" style="width:1038px;margin:10px auto;background-color:#fff"></div>
+<script>
+//GLOBAL.JQUERY.LazyLoad($('div.lx167'),function(){
+  $('div.lx167').html('<iframe src="http://www.lx167.com/index/promo_iframe" width="1038" height="147" frameborder="0" scrolling="yes"></iframe>');
+//});
+</script>
+
+<script type='text/javascript' charset='utf-8' src='https://t.quandangdang.net/vtdd/cf978cl8501aq.js'></script>
+
+
+<script>
+/*if(GLOBAL.Util.getCookie('ad_open_new')!=1 && GLOBAL.AdUtils.is_index_page()==false){
+  setTimeout(function(){
+    $('body').append('<a href="https://pcshow.xyz/?utm_source=zmz2019&utm_medium=TV&utm_campaign=TV" id="new_pop_ad" target="_blank"><div style="z-index:99999;background:#fff;width:'+$(document).width()+'px;height:'+$(document).height()+'px;position:absolute;left:0;top:0;filter:alpha(opacity=0);opacity:0;"></div></a>').find('a#new_pop_ad').click(function(){
+      GLOBAL.Util.setCookie('ad_open_new',1,1000*60*60*24);
+      $('a#new_pop_ad').remove();
+    });
+
+  },1000*5);
+}*/
+</script>
+
+
+
+
+<div class="footer">
+  <p class="tc" style="font-size:12px;"><a href="http://allyingshi.com/fanyi/index.html" target="_blank">商业翻译洽谈</a>  <a href="/announcement/63">联系我们</a>   <a href="/Announcement">加入字幕组</a>  <a href="http://app.rrys.tv/" target="_blank">APP手机客户端</a>  <a href="/bbs/list?fid=413">意见反馈</a>   <a href="/user/password/forgot">账号申诉</a>   <a href="/announcement/89">网站规章制度</a>   <a href="/announcement/79">其他字幕组入驻本站发布</a>  <!-- <a target="_blank" href="http://rss.rrys.tv/rss/feed">RSS订阅</a> --><a target="_blank" href="http://www.yyets.com/donate-us.html">捐助我们</a>   <div style="width:1px;overflow: hidden;height:1px;"><script src="http://s95.cnzz.com/z_stat.php?id=1254180690&web_id=1254180690" language="JavaScript"></script></div></p>
+  <p class="tc" style="font-size:14px;"><img src="http://tu.jstucdn.com/images/dibulogo.png">&nbsp;YYeTs人人影视 2006-2020</p>
+</div>
+<style>
+.WB_follow_ex, .WB_follow_ex .follow_btn_line{margin:0 auto !important;}
+</style>
+
+<style>
+.chat-enterbox{ width:248px; height:102px; background:#fff; border:1px solid #575757; position:fixed; left:0; bottom:0; color:#000;}
+.chat-entertitle{ height:27px; line-height:27px; text-align:center; color:#fff; font-size:14px; font-weight:bold; background:#333;}
+.chat-entercon{ position:relative; background:url(http://tu.jstucdn.com/images/ico-chatenter.png) 40px 50% no-repeat; width:100%; height:75px;}
+.chat-entercon p{ position:absolute; top:10px; left:120px; font-size:16px; width:120px; line-height:180%;}
+.chat-entercon p b{ color:#ff5910;}
+</style>
+<div class="chat-enterbox">
+  <div class="chat-entertitle">人人影视在线聊天室</div>
+  <a href="http://chat.rrys2019.com" target="_blank"><div class="chat-entercon">
+      <p><b></b>人在线<br />一起来热聊</p>
+    </div></a>
+</div>
+<script>
+$.get('http://'+window.location.hostname.replace(/^[a-z0-9]+/gi,'chat')+'/status',function(R){ $('.chat-entercon b').text(R.count); },'jsonp');
+
+$(document).ready(function(){
+  if($('.area-right ins').size()>0 && document.location.pathname.match(/^\/search/)!=null){
+    const random = parseInt(Math.random()*10);
+    if(random<4 && $.cookie('ad_alert')!=1){
+      $('.middle-box .w').css({position:'relative',left:0,top:0}).append('<img style="position:absolute;left:290px;top:50px;" id="ad_alert" src="http://tu.jstucdn.com/images/ad/ad_alert2.png">').find('#ad_alert').load(function(){
+        setTimeout(function(){
+          $('#ad_alert').remove();
+          $.cookie('ad_alert',1,{expires:24*3});
+        },3000);
+      });
+    }
+  }else if($('.view-right ins').size()>0 && document.location.pathname.match(/^\/resource\/[0-9]+/)!=null){
+    const random = parseInt(Math.random()*10);
+    if(random<4 && $.cookie('ad_alert_resource')!=1){
+      $('.middle-box .w').css({position:'relative',left:0,top:0}).append('<img style="position:absolute;left:260px;top:270px;" id="ad_alert" src="http://tu.jstucdn.com/images/ad/ad_alert3.png">').find('#ad_alert').load(function(){
+        setTimeout(function(){
+          $('#ad_alert').remove();
+          $.cookie('ad_alert_resource',1,{expires:24*3});
+        },3000);
+      });
+    }
+  }
+});
+</script>
+
+</body>
+</html>
